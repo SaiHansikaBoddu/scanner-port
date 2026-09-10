@@ -1,0 +1,6 @@
+# Simple Network Security Port Scanner Requirements
+# --------------------------------------------------
+# This project uses only the Python Standard Library (socket, sys, time, datetime).
+# No external third-party packages or pip dependencies are required.
+#
+# Python Version: Python 3.6 or higher

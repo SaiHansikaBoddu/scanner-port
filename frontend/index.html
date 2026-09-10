@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetScan // Cyber Security Port Scanner</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Cyber Grid Effect -->
+  <div class="cyber-grid"></div>
+  <div class="cyber-glow-top"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <circle cx="12" cy="11" r="3"/>
+            <path d="M12 8v-1M12 15v-1M9 11H8M16 11h-1"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>NetScan <span class="brand-highlight">// PORT SCANNER</span></h1>
+          <p class="brand-tagline">Network Security Reconnaissance & TCP Port Inspector</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="status-indicator-dot"></span>
+        <span class="status-indicator-text" id="backendStatus">Backend: Ready</span>
+      </div>
+    </header>
+
+    <!-- Error Alert Box -->
+    <div class="alert-box hidden" id="errorAlert" role="alert">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <strong id="errorTitle">Scanning Error</strong>
+        <p id="errorMessage">An error occurred.</p>
+      </div>
+      <button class="alert-close-btn" id="closeAlertBtn" aria-label="Close error">&times;</button>
+    </div>
+
+    <!-- Main Grid -->
+    <main class="main-layout">
+      <!-- Input Configuration Panel -->
+      <section class="card config-card">
+        <div class="card-header">
+          <div class="card-header-icon">⚙️</div>
+          <h2>Target & Range Configuration</h2>
+        </div>
+
+        <form id="scanForm" class="scan-form">
+          <!-- Target Input -->
+          <div class="form-group">
+            <label for="targetInput">
+              Target IP Address or Hostname
+              <span class="required-star">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-prefix-icon">🌐</span>
+              <input 
+                type="text" 
+                id="targetInput" 
+                placeholder="e.g., 127.0.0.1 or localhost" 
+                value="127.0.0.1" 
+                required 
+                autocomplete="off"
+              >
+            </div>
+            <!-- Quick Target Chips -->
+            <div class="quick-chips">
+              <span class="chips-label">Quick select:</span>
+              <button type="button" class="chip-btn" data-target="127.0.0.1">127.0.0.1</button>
+              <button type="button" class="chip-btn" data-target="localhost">localhost</button>
+              <button type="button" class="chip-btn" data-target="scanme.nmap.org">scanme.nmap.org</button>
+            </div>
+          </div>
+
+          <!-- Port Range Inputs -->
+          <div class="ports-row">
+            <div class="form-group">
+              <label for="startPortInput">
+                Starting Port
+                <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-prefix-icon">🔢</span>
+                <input 
+                  type="number" 
+                  id="startPortInput" 
+                  min="1" 
+                  max="65535" 
+                  value="1" 
+                  placeholder="1" 
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="endPortInput">
+                Ending Port
+                <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-prefix-icon">🔢</span>
+                <input 
+                  type="number" 
+                  id="endPortInput" 
+                  min="1" 
+                  max="65535" 
+                  value="100" 
+                  placeholder="100" 
+                  required
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Range Presets -->
+          <div class="preset-group">
+            <span class="preset-label">Port Range Presets:</span>
+            <div class="preset-buttons">
+              <button type="button" class="preset-btn" data-start="1" data-end="100">1 – 100 (Common Low)</button>
+              <button type="button" class="preset-btn" data-start="70" data-end="90">70 – 90 (Web HTTP)</button>
+              <button type="button" class="preset-btn" data-start="130" data-end="145">130 – 145 (RPC/SMB)</button>
+              <button type="button" class="preset-btn" data-start="440" data-end="450">440 – 450 (SSL/HTTPS)</button>
+              <button type="button" class="preset-btn" data-start="3300" data-end="3310">3300 – 3310 (MySQL)</button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="scanBtn" class="btn-primary">
+            <span class="btn-icon" id="btnIcon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 3v9l6 3"/>
+              </svg>
+            </span>
+            <span id="btnText">Scan Ports</span>
+            <span class="btn-spinner hidden" id="btnSpinner"></span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Results & Metrics Section -->
+      <section class="results-section">
+        <!-- Summary Statistics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Target Host</span>
+            <span class="metric-value font-mono" id="statTarget">—</span>
+            <span class="metric-sub" id="statIp">IP: —</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Scanned Range</span>
+            <span class="metric-value font-mono" id="statRange">—</span>
+            <span class="metric-sub" id="statTotalScanned">Total: 0 ports</span>
+          </div>
+
+          <div class="metric-card highlight-metric">
+            <span class="metric-label">Open Ports</span>
+            <span class="metric-value font-mono highlight-text" id="statOpenCount">—</span>
+            <span class="metric-sub" id="statOpenList">None identified</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Scan Status</span>
+            <span class="metric-value" id="statStatus">Idle</span>
+            <span class="metric-sub" id="statDuration">Duration: —</span>
+          </div>
+        </div>
+
+        <!-- Results Table Card -->
+        <div class="card table-card">
+          <div class="table-header-row">
+            <div class="table-title">
+              <h3>Scan Results</h3>
+              <span class="badge badge-count" id="resultCountBadge">0 ports</span>
+            </div>
+
+            <!-- Table Filters -->
+            <div class="table-controls">
+              <div class="filter-tabs">
+                <button type="button" class="tab-btn active" data-filter="all">All</button>
+                <button type="button" class="tab-btn" data-filter="open">Open Only</button>
+                <button type="button" class="tab-btn" data-filter="closed">Closed Only</button>
+              </div>
+              <div class="search-wrapper">
+                <input type="text" id="tableSearchInput" placeholder="Filter by port/service...">
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Table Container -->
+          <div class="table-container">
+            <table class="results-table" id="resultsTable">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Port</th>
+                  <th style="width: 90px;">Protocol</th>
+                  <th>Service Description</th>
+                  <th style="width: 130px; text-align: right;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <tr class="empty-row">
+                  <td colspan="4">
+                    <div class="empty-state">
+                      <div class="empty-icon">📡</div>
+                      <h4>No Scan Results Yet</h4>
+                      <p>Specify a target IP/hostname and port range above, then click <strong>Scan Ports</strong>.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Knowledge & Theory Card -->
+    <section class="card theory-card">
+      <div class="card-header">
+        <div class="card-header-icon">🛡️</div>
+        <h2>Network Security Fundamentals: How Port Scanning Works</h2>
+      </div>
+      <div class="theory-grid">
+        <div class="theory-item">
+          <h4>1. TCP 3-Way Handshake</h4>
+          <p>The scanner initiates connection via <code>SYN</code> packet. If a service is listening, the target responds with <code>SYN-ACK</code>. If closed, it returns an <code>RST</code> (Reset) packet.</p>
+        </div>
+        <div class="theory-item">
+          <h4>2. Python socket.connect_ex()</h4>
+          <p>The backend uses <code>s.connect_ex((ip, port))</code>. A return code of <code>0</code> indicates a successful connection (<strong>OPEN</strong>), while non-zero signals connection refused (<strong>CLOSED</strong>).</p>
+        </div>
+        <div class="theory-item">
+          <h4>3. Service Identification</h4>
+          <p>Well-known port numbers (such as Port 80 for HTTP, 443 for HTTPS, and 22 for SSH) map to standardized network protocols defined by IANA.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Network Security Port Scanner • Academic Cybersecurity Project • Standard Python Socket Implementation</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
